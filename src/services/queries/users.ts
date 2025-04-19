@@ -7,13 +7,13 @@ export const getUserByUsername = async (username: string) => {
 };
 
 export const getUserById = async (id: string) => {
-	const user = await redis.hgetall(usersKey(id));
+	const user = await redis.hGetAll(usersKey(id));
 	return deserialize(id, user)
 };
 
 export const createUser = async (attrs: CreateUserAttrs) => {
 	const id = genId();
-	await redis.hset(usersKey(id), serialize(attrs));
+	await redis.hSet(usersKey(id), serialize(attrs));
 	return id
 };
 

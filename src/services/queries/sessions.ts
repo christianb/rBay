@@ -11,7 +11,7 @@ export const getSession = async (id: string) => {
 };
 
 export const saveSession = async (session: Session) => {
-	return redis.hset(sessionsKey(session.id), serialize(session));
+	return redis.hSet(sessionsKey(session.id), serialize(session));
 };
 
 const deserialize = (id: string, session: { [key: string]: string }) => {

@@ -20,4 +20,13 @@ export const itemsByEndingTime = async (
 	);
 
 	console.log(ids);
+
+	const results = await Promise.all(ids.map((id) => redis.hGetAll(itemsKey(id))));
+
+	console.log(results);
+
+	return results.map((item, i: number) => {
+		deserialize(ids[i], item);
+	});
+
 };

@@ -2,9 +2,8 @@ import type { CreateItemAttrs } from '$services/types';
 import { redis } from '$services/redis';
 import { serialize } from '$services/queries/items/serialize';
 import { genId } from '$services/utils';
-import { itemsKey, itemsByViewsKey, itemByEndingAtKey } from '$services/keys';
+import { itemsKey, itemsByViewsKey, itemsByEndingAtKey } from '$services/keys';
 import { deserialize } from '$services/queries/items/deserialize';
-import { itemsByEndingAtKey } from '../../../../seeds/seed-keys';
 
 export const getItem = async (id: string) => {
 	const item = await redis.hGetAll(itemsKey(id));

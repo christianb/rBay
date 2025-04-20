@@ -1,5 +1,23 @@
+import { redis } from '$services/redis';
+import { itemsKey, itemsByEndingAtKey } from '$services/keys';
+import { deserialize } from '$services/queries/items/deserialize';
+
 export const itemsByEndingTime = async (
 	order: 'DESC' | 'ASC' = 'DESC',
 	offset = 0,
 	count = 10
-) => {};
+) => {
+	const ids = await redis.zRange(
+		itemsByEndingAtKey(),
+		Date.now(),
+		'+inf',
+		{
+			BY: 'SCORE',
+			LIMIT: {
+				offset, count
+			}
+		}
+	);
+
+	console.log(ids);
+};

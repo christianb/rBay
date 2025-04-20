@@ -2,8 +2,9 @@ import type { CreateItemAttrs } from '$services/types';
 import { redis } from '$services/redis';
 import { serialize } from '$services/queries/items/serialize';
 import { genId } from '$services/utils';
-import { itemsKey } from '$services/keys';
+import { itemsKey, itemsByViewsKey, itemByEndingAtKey } from '$services/keys';
 import { deserialize } from '$services/queries/items/deserialize';
+import { itemsByEndingAtKey } from '../../../../seeds/seed-keys';
 
 export const getItem = async (id: string) => {
 	const item = await redis.hGetAll(itemsKey(id));
@@ -31,6 +32,19 @@ export const getItems = async (ids: string[]) => {
 export const createItem = async (attrs: CreateItemAttrs, userId: string) => {
 	const id = genId();
 	const serialized = serialize(attrs);
-	await redis.hSet(itemsKey(id), serialized);
+
+	await Promise.all([
+		// pipelining, sending a single command to Redis
+		redis.hSet(itemsKey(id), serialized),
+		redis.zAdd(itemsByViewsKey(), {
+			value: id,
+			score: 0
+		}),
+		redis.zAdd(itemsByEndingAtKey(), {
+			value: id,
+			score: attrs.endingAt.toMillis()
+		})
+	]);
+
 	return id;
 };

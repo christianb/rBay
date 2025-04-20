@@ -1,11 +1,15 @@
 import type { CreateUserAttrs } from '$services/types';
 import { genId } from '$services/utils';
 import { redis } from '$services/redis';
-import { usersKey } from '$services/keys';
-import { uniqueUsernamesKey } from '$services/keys';
+import { usersKey, uniqueUsernamesKey, usernamesKey } from '$services/keys';
 
 export const getUserByUsername = async (username: string) => {
+	const decimalId = await redis.zScore(usernamesKey(), username);
+	if (!decimalId) throw Error(`User with username "${username}" does not exist`);
 
+	const id = decimalId.toString(16);
+	const user = await redis.hGetAll(usersKey(id));
+	return deserialize(id, user)
 };
 
 export const getUserById = async (id: string) => {
@@ -22,6 +26,13 @@ export const createUser = async (attrs: CreateUserAttrs) => {
 
 	await redis.hSet(usersKey(id), serialize(attrs));
 	await redis.sAdd(uniqueUsernamesKey(), attrs.username);
+
+	// TODO a standard redis hash would work as well
+	await redis.zAdd(usernamesKey(), {
+		value: attrs.username,
+		score: parseInt(id, 16)
+	});
+
 	return id;
 };
 

@@ -5,6 +5,7 @@ import { usersKey } from '$services/keys';
 import { uniqueUsernamesKey } from '$services/keys';
 
 export const getUserByUsername = async (username: string) => {
+
 };
 
 export const getUserById = async (id: string) => {
@@ -13,16 +14,23 @@ export const getUserById = async (id: string) => {
 };
 
 export const createUser = async (attrs: CreateUserAttrs) => {
-	const id = genId();
-
 	// check for unique usernames
 	const exists = await redis.sIsMember(uniqueUsernamesKey(), attrs.username);
-	if (exists == 1) {
-		throw new Error('Username already exists');
-	}
+	if (exists) throw new Error('Username already exists');
+
+	const id: string = await genUniqueUserId();
 
 	await redis.hSet(usersKey(id), serialize(attrs));
 	await redis.sAdd(uniqueUsernamesKey(), attrs.username);
+	return id;
+};
+
+const genUniqueUserId = async () => {
+	let id: string;
+	do {
+		id = genId();
+	} while (await redis.exists(usersKey(id)));
+
 	return id;
 };
 

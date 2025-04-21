@@ -2,7 +2,7 @@ import type { CreateItemAttrs } from '$services/types';
 import { redis } from '$services/redis';
 import { serialize } from '$services/queries/items/serialize';
 import { genId } from '$services/utils';
-import { itemsKey, itemsByViewsKey, itemsByEndingAtKey } from '$services/keys';
+import { itemsKey, itemsByViewsKey, itemsByEndingAtKey, itemsByPriceKey } from '$services/keys';
 import { deserialize } from '$services/queries/items/deserialize';
 
 export const getItem = async (id: string) => {
@@ -37,12 +37,16 @@ export const createItem = async (attrs: CreateItemAttrs, userId: string) => {
 		redis.hSet(itemsKey(id), serialized),
 		redis.zAdd(itemsByViewsKey(), {
 			value: id,
-			score: 0
+			score: 0,
 		}),
 		redis.zAdd(itemsByEndingAtKey(), {
 			value: id,
-			score: attrs.endingAt.toMillis()
-		})
+			score: attrs.endingAt.toMillis(),
+		}),
+		redis.zAdd(itemsByPriceKey(), {
+			value: id,
+			score: 0,
+		}),
 	]);
 
 	return id;

@@ -1,5 +1,6 @@
 import { createClient, defineScript } from 'redis';
 import { incrementViewScript } from '$services/redis/lua/incrementViewScript';
+import { unlockScript } from '$services/redis/lua/unlockScript';
 
 const redis = createClient({
 	socket: {
@@ -9,6 +10,7 @@ const redis = createClient({
 	password: process.env.REDIS_PW,
 	scripts: {
 		incrementView: incrementViewScript,
+		unlock: unlockScript
 	},
 });
 

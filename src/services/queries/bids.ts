@@ -1,13 +1,11 @@
 import type { CreateBidAttrs, Bid } from '$services/types';
 import { bidHistoryKey, itemsKey, itemsByPriceKey } from '$services/keys';
-import { redis } from '$services/redis';
+import { redis, withLock } from '$services/redis';
 import { DateTime } from 'luxon';
 import { getItem } from '$services/queries/items';
 
-export const createBid = async (attrs: CreateBidAttrs) => {
-	return redis.executeIsolated(async (isolatedClient) => {
-		await isolatedClient.watch(itemsKey(attrs.itemId));
-
+export const createBid = async (attrs: CreateBidAttrs): Promise<any> =>
+	withLock(attrs.itemId, async (redisProxy, signal: any) => {
 		const item = await getItem(attrs.itemId);
 
 		if (!item) throw Error(`Item "${attrs.itemId}" not found`);
@@ -15,22 +13,21 @@ export const createBid = async (attrs: CreateBidAttrs) => {
 		if (item.endingAt.diff(DateTime.now()).toMillis() < 0) throw Error(`Bidding closed for item"`);
 
 		const serialized = serializeBidHistory(attrs.amount, attrs.createdAt.toMillis());
+		if (signal.expired) throw new Error('Lock expired, can not write any more data');
 
-		isolatedClient
-			.multi()
-			.rPush(bidHistoryKey(attrs.itemId), serialized)
-			.hSet(itemsKey(item.id), {
+		return Promise.all([
+			redisProxy.rPush(bidHistoryKey(attrs.itemId), serialized),
+			redisProxy.hSet(itemsKey(item.id), {
 				bids: item.bids + 1,
 				price: attrs.amount,
 				highestBidUserId: attrs.userId,
-			})
-			.zAdd(itemsByPriceKey(), {
+			}),
+			redisProxy.zAdd(itemsByPriceKey(), {
 				value: item.id,
 				score: attrs.amount,
-			})
-			.exec();
+			}),
+		]);
 	});
-};
 
 export const getBidHistory = async (itemId: string, offset = 0, count = 10): Promise<Bid[]> => {
 	const startIndex = -1 * offset - count;

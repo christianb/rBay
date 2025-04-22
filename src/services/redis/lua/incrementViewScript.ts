@@ -17,7 +17,7 @@ export const incrementViewScript = defineScript({
 					redis.call('HINCRBY', itemsKey, 'views', 1)
 					redis.call('ZINCRBY', itemByViewsKey, 1, itemId)
 				end
-			`,
+	`,
 	transformArguments(itemId: string, userId: string) {
 		return [
 			itemsViewsKey(itemId),

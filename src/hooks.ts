@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import '$services/redis/client';
+import '$services/redis/redis-client';
 import boxen from 'boxen';
 import { DateTime } from 'luxon';
 import type { Handle, GetSession } from '@sveltejs/kit';

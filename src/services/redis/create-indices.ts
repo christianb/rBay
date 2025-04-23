@@ -1,4 +1,4 @@
-import { redis } from '$services/redis';
+import { redis } from './redis-client';
 import { SchemaFieldTypes } from 'redis';
 import { itemsIndexKey, itemsKey } from '$services/keys';
 

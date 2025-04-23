@@ -15,7 +15,8 @@ export const searchItems = async (term: string, size: number = 5) => {
 	const query = `(@name:(${cleanedSearchTerm}) => { $weight: 5.0 }) | (@description:${cleanedSearchTerm})`;
 	const results = await redis.ft.search(
 		itemsIndexKey(),
-		query, {
+		query,
+		{
 			LIMIT: {
 				from: 0,
 				size: size,

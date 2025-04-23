@@ -25,12 +25,12 @@ export const itemsByUser = async (userId: string, opts: QueryOpts) => {
 				from: opts.page * opts.perPage,
 				size: opts.perPage,
 			},
-		},
+		} as any,
 	);
 
-	const items = documents.map((itemKey: string, serializedItem: any) => {
-		deserialize(itemKey.replace('items#', ''), serializedItem);
-	});
+	const items = documents.map(({ id, value }) => {
+		return deserialize(id.replace('items#', ''), value as any);
+	})
 
 	return {
 		totalPages: Math.ceil(total / opts.perPage),

@@ -42,7 +42,7 @@ export const createIndices = async () => {
 				type: SchemaFieldTypes.NUMERIC,
 				sortable: true,
 			},
-		},
+		} as any,
 		{
 			ON: 'HASH',
 			PREFIX: itemsKey(''),

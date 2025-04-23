@@ -11,9 +11,11 @@ export const searchItems = async (term: string, size: number = 5) => {
 		.join(' ');
 
 	if (cleanedSearchTerm === '') return [];
+
+	const query = `(@name:(${cleanedSearchTerm}) => { $weight: 5.0 }) | (@description:${cleanedSearchTerm})`;
 	const results = await redis.ft.search(
 		itemsIndexKey(),
-		cleanedSearchTerm, {
+		query, {
 			LIMIT: {
 				from: 0,
 				size: size,
@@ -21,5 +23,5 @@ export const searchItems = async (term: string, size: number = 5) => {
 		},
 	);
 
-	return results.documents.map(({id, value}) => deserialize(id, value))
+	return results.documents.map(({ id, value }) => deserialize(id, value));
 };

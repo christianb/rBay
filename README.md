@@ -3,17 +3,14 @@
 ## Setup
 1. Install Node.js
 2. run `npm install` inside the project folder
-3. Add Redis connection info from [cloud.redis.io](https://cloud.redis.io/#/databases)
-4. run `npm run dev`
+3. Add Redis connection info from [cloud.redis.io](https://cloud.redis.io/#/databases) into `.env` file:
 
-## Building
 
-To create a production version of your app:
+## Local 
+To run the server locally: run `npm run dev`.
 
-```bash
-npm run build
+## Seed Data
 ```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+!!! THIS WILL WIPE ALL EXISTING DATA !!!
+```
+You can add seed data to Redis by executing: `npm run seed` 
